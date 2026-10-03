@@ -26,11 +26,32 @@
  *   - Use OpenRouter as your provider (--provider openrouter or /model)
  *   - The extension automatically adds session_id to requests
  *   - View your sessions in the OpenRouter console
+ *
+ * Debug logging:
+ *   - Startup and per-request logging is opt-in via `pi --openrouter-session-debug`
+ *   - By default the extension stays silent; raw console.log output is not
+ *     rendered through pi's TUI and otherwise shows up as stray text in the
+ *     chat input area on startup
  */
 
 import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
 
 export default function (pi: ExtensionAPI) {
+  // Opt-in debug logging via a registered CLI flag, so startup stays silent
+  // by default. console.log writes raw output that pi cannot render in its
+  // TUI; on startup it appears as stray text in the chat input area.
+  const debugFlag = "openrouter-session-debug";
+  pi.registerFlag(debugFlag, {
+    description: "Print OpenRouter session IDs to the console",
+    type: "boolean",
+    default: false,
+  });
+
+  function debug(message: string): void {
+    if (pi.getFlag(debugFlag) === true) {
+      console.log(message);
+    }
+  }
   // Stable unique base derived from the session file name for this session lifetime.
   // Combined with the human-readable name (if set) to build the final session_id.
   let baseSessionId: string | null = null;
@@ -93,7 +114,7 @@ export default function (pi: ExtensionAPI) {
       baseSessionId = `ephemeral-${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
     }
 
-    console.log(`[openrouter-session] Ready, base session ID: ${baseSessionId}`);
+    debug(`[openrouter-session] Ready, base session ID: ${baseSessionId}`);
 
     if (ctx.sessionManager.getEntries().length === 0) {
       ctx.ui?.notify("OpenRouter session tracking enabled", "info");
@@ -124,7 +145,7 @@ export default function (pi: ExtensionAPI) {
       if (sessionId) {
         // Only log when the ID changes to avoid spamming the console
         if (sessionId !== lastLoggedSessionId) {
-          console.log(`[openrouter-session] Using session_id: ${sessionId}`);
+          debug(`[openrouter-session] Using session_id: ${sessionId}`);
           lastLoggedSessionId = sessionId;
         }
 

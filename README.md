@@ -111,10 +111,18 @@ Or select OpenRouter interactively:
 
 ### 3. Verify the Extension is Working
 
-When you start pi, you should see:
+The extension is silent by default. To verify it is working (or debug the generated IDs), start pi with the debug flag:
+
+```sh
+pi --openrouter-session-debug
+```
+
+You should see:
 ```
 [openrouter-session] Ready, base session ID: 2026-05-06T12-00-00-000Z_019dbbc7-...
 ```
+
+Without the flag, no session IDs are printed to the console — raw `console.log` output is not rendered through pi's TUI and would otherwise show up as stray text in the chat input area on startup.
 
 ### 4. View Sessions in OpenRouter Console
 
